@@ -2,7 +2,128 @@
 /**
  * Plugin Name: Gifterator
  */
- 
+
+
+add_shortcode('prezenty','show_present_list');
+
+//[prezenty]
+function show_present_list() {
+	
+	wp_enqueue_script('reservation', plugins_url('/reservation.js', __FILE__));
+	
+	global $wpdb;
+	
+	$savedPresents = $wpdb->get_results("
+											SELECT *
+											FROM wp_presents");
+											
+	
+	
+	$count = count($savedPresents);
+	
+	for($i = 0; $i < $count; $i++) {
+
+		if($savedPresents[$i] -> reserved) 
+		{
+			unset($savedPresents[$i]);
+		}		
+		
+	}
+		   
+	for($i = 0; $i < $count; $i += 3  ) {
+		
+		$returnString .= 
+					'<div class="col-md-4 col-sm-6 col-xs-12">' . get_present($savedPresents[0 + $i]) .'</div>				
+					<div class="col-md-4 col-sm-6 col-xs-12">' . get_present($savedPresents[1 + $i]) .'</div>				
+					<div class="col-md-4 col-sm-6 col-xs-12">' . get_present($savedPresents[2 + $i]) .'</div>';													
+				
+			}
+			
+	?>
+	
+	<div id="presentModal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Modal title</h4>
+      </div>
+      <div class="modal-body">
+        <p>Jeśli naprawdę chcesz zarezerwować ten prezent,</p>
+        <p>wprowadź haslo i wciśnij "Zarezerwuj"</p>
+        <form method="post">
+        <input type="hidden" name="presentId">
+			<input type="password" name="presentpass">  
+			<input type="submit" class="btn btn-danger" value="Zarezerwuj">     
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Zamknij</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+	
+	<?php
+	
+	if(!empty($_GET['message'])) {
+		
+		if ($_GET['message'] == 'success')
+			$returnString = '<h1 class="bg-success">Dziękujemy za rezerwacje</h1>' . $returnString;
+			
+		if ($_GET['message'] == 'wrongpass')
+			$returnString = '<h1 class="bg-danger">Niepoprawne Haslo</h1>' . $returnString;
+		
+	}
+	
+	if(!empty($_POST)) {
+		
+		if(!empty($_POST['presentId']) && !empty($_POST['presentpass'])) {
+		
+			if($_POST['presentpass'] == 'tralala') {
+					
+					$wpdb -> update('wp_presents', array('reserved' => true), array("id" => $_POST['presentId']));
+			
+					replace_post_get(get_page_link_by_title('presents') . '?message=success' );
+       	
+       	}
+       	else {
+				replace_post_get(get_page_link_by_title('presents') . '?message=wrongpass' );
+       	}
+       		
+       }
+       	
+		
+		replace_post_get(get_page_link_by_title('presents'));
+	}
+	
+	return $returnString;
+}
+
+function replace_post_get($link) {
+	
+		header( 'HTTP/1.1 303 See Other');
+      header( 'Location: ' . $link );
+      exit();
+}
+
+function get_present($present) {
+	
+	if(empty($present)) {
+		return;
+	}
+	
+	$returnString = '<div class="panel panel-default">
+							<div class="panel-body">
+							<img src="' . $present -> image . '" class="img-responsive" alt="">
+							<p>' . $present -> description . '</p>
+							<button type="button" class="btn btn-default" data-presentId="'. $present -> id .'" >Zarezerwować</button>
+							</div>
+							</div>';
+							
+	return $returnString;				
+}
+
 add_action('admin_menu', 'add_gifterator_menu');
  
 function add_gifterator_menu() {
@@ -35,6 +156,8 @@ function build_gifterator_menu() {
 	
 	global $wpdb;
 	
+	get_saved_presents();
+	
 	if(isset($_POST['present_description']) && !empty($_POST['present_description'])) {
 
 		$presentImage = $_POST['present_image'];
@@ -47,20 +170,15 @@ function build_gifterator_menu() {
 			'reserved' => false
 		);
 		
-		$wpdb -> insert('wp_presents', $saveData); 			 		
+		$wpdb -> insert('wp_presents', $saveData);
 	}
-	
-	get_saved_presents();
 	
 	if (!empty($_GET['present_id']))
 	{
 		$wpdb->delete( 'wp_presents', array( 'id' => $_GET['present_id'] ) );
 		
-		$url = admin_url();
+		replace_post_get(admin_url() . '?page=prezenty');
 		
-		wp_redirect($url);
-		
-		exit();
 	}
 	
 }
