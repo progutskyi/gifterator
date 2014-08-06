@@ -20,24 +20,17 @@ function show_present_list() {
 	
 	
 	$count = count($savedPresents);
-	
-	for($i = 0; $i < $count; $i++) {
-
-		if($savedPresents[$i] -> reserved) 
-		{
-			unset($savedPresents[$i]);
-		}		
-		
-	}
 		   
-	for($i = 0; $i < $count; $i += 3  ) {
+	for($i = 0; $i < $count; $i ++) {
 		
-		$returnString .= 
-					'<div class="col-md-4 col-sm-6 col-xs-12">' . get_present($savedPresents[0 + $i]) .'</div>				
-					<div class="col-md-4 col-sm-6 col-xs-12">' . get_present($savedPresents[1 + $i]) .'</div>				
-					<div class="col-md-4 col-sm-6 col-xs-12">' . get_present($savedPresents[2 + $i]) .'</div>';													
+		if (!$savedPresents[$i] -> reserved)
+		{
+			$returnString .='<div class="col-md-4 col-sm-6 col-xs-12">' . get_present($savedPresents[$i]) .'</div>';		
+
+		}
+															
 				
-			}
+	}
 			
 	?>
 	
@@ -46,11 +39,11 @@ function show_present_list() {
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title">Modal title</h4>
+        <h4 class="modal-title">Rezerwacja</h4>
       </div>
       <div class="modal-body">
-        <p>Jeśli naprawdę chcesz zarezerwować ten prezent,</p>
-        <p>wprowadź haslo i wciśnij "Zarezerwuj"</p>
+        <p>Jeśli naprawdę chcesz zarezerwować ten prezent</p>
+        <p>Wprowadź haslo i wciśnij "Zarezerwuj"</p>
         <form method="post">
         <input type="hidden" name="presentId">
 			<input type="password" name="presentpass">  
