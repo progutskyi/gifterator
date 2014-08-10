@@ -25,11 +25,8 @@ function show_present_list() {
 		
 		if (!$savedPresents[$i] -> reserved)
 		{
-			$returnString .='<div class="col-md-4 col-sm-6 col-xs-12">' . get_present($savedPresents[$i]) .'</div>';		
-
+			$returnString .='<div class="col-md-4 col-sm-6 col-xs-12">' . get_present($savedPresents[$i]) .'</div>';
 		}
-															
-				
 	}
 			
 	?>
@@ -44,10 +41,10 @@ function show_present_list() {
       <div class="modal-body">
         <p>Jeśli naprawdę chcesz zarezerwować ten prezent</p>
         <p>Wprowadź haslo i wciśnij "Zarezerwuj"</p>
-        <form method="post">
+        <form method="post" id="form-reserve">
         <input type="hidden" name="presentId">
-			<input type="password" name="presentpass">  
-			<input type="submit" class="btn btn-danger" value="Zarezerwuj">     
+			<input type="text" name="presentpass">  
+			<input type="button" class="btn btn-danger" value="Zarezerwuj" id="btn-reserve">     
         </form>
       </div>
       <div class="modal-footer">
@@ -76,28 +73,12 @@ function show_present_list() {
 			if($_POST['presentpass'] == 'tralala') {
 					
 					$wpdb -> update('wp_presents', array('reserved' => true), array("id" => $_POST['presentId']));
-			
-					replace_post_get(get_page_link_by_title('presents') . '?message=success' );
        	
-       	}
-       	else {
-				replace_post_get(get_page_link_by_title('presents') . '?message=wrongpass' );
-       	}
-       		
+       	}      		
        }
-       	
-		
-		replace_post_get(get_page_link_by_title('presents'));
 	}
 	
 	return $returnString;
-}
-
-function replace_post_get($link) {
-	
-		header( 'HTTP/1.1 303 See Other');
-      header( 'Location: ' . $link );
-      exit();
 }
 
 function get_present($present) {
@@ -168,9 +149,7 @@ function build_gifterator_menu() {
 	
 	if (!empty($_GET['present_id']))
 	{
-		$wpdb->delete( 'wp_presents', array( 'id' => $_GET['present_id'] ) );
-		
-		replace_post_get(admin_url() . '?page=prezenty');
+		$wpdb->delete( 'wp_presents', array( 'id' => $_GET['present_id'] ));
 		
 	}
 	
@@ -254,7 +233,7 @@ function create_presents_table() {
   		id mediumint(9) NOT NULL AUTO_INCREMENT,
   		image text NULL,
   		description longtext NOT NULL,
-  		reserved bit(1) DEFAULT 0 NOT NULL,
+  		reserved tinyint(1) DEFAULT 0 NOT NULL,
   		UNIQUE KEY id (id)
 	) $charset_collate;";
 

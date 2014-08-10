@@ -12,5 +12,14 @@ $("[data-presentId]").on("click", function () {
 })
 
 $("#btn-reserve").on("click", function () {
-	$("#presentModal").modal("hide");
+
+	var formData = $("#form-reserve").serialize();
+	
+	$.post(document.URL, formData, function () {
+		
+		$("#presentModal").modal("hide");
+		
+		window.location.href = document.URL;
+		 
+	});
 })
